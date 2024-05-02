@@ -9,12 +9,12 @@
     dest: /etc/nginx/default.d/roboshop.conf
 
 - name: Remove old app content"
-  ansible.windows.win_file:
+  ansible.builtin.file:
     path: /usr/share/nginx/html
     state: absent
 
 - name: Create app directory
-  ansible.windows.win_file:
+  ansible.builtin.file:
     path: /usr/share/nginx/html
     state: directory
 
