@@ -1,0 +1,25 @@
+- name: Load mongoDB schema
+  when: schema_setup == "mongo"
+  block:
+    - name: Copy mongodb repo
+      ansible.builtin.copy:
+       src: mongo.repo
+       dest: /etc/yum.repos.d/mongo.repo
+      
+    - name: install mongodb client
+      ansible.builtin.yum:
+       name: mongodb-org-shell
+       state: installed
+
+    - name: load schema
+      ansible.builtin.shell: mongo --host  {{ lookup('aws_ssm', 'dev.catalogue.mongo_endpoint', region='us-east-1') }} </app/schema/{{component}}.js
+
+- name: Load mysql schema
+  when: schema_setup == "mysql"
+  block:
+    - name: install mysql client
+      ansible.builtin.yum:
+        name: mysql
+
+    - name: Load schema
+      ansible.builtin.shell: mysql -h {{ lookup('aws_ssm', 'dev.shipping.db_host', region='us-east-1') }} -u{{ lookup('aws_ssm', 'dev.shipping.db_user', region='us-east-1') }} -p{{ lookup('aws_ssm', 'dev.shipping.db_password', region='us-east-1') }} </app/schema/{{component}}.sql
