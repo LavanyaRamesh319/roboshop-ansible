@@ -1,0 +1,18 @@
+filebeat.inputs:
+  - type: filestream
+    id: {{ component }}
+    enabled: true
+    paths:
+      - {{ log_file }}
+      - fields:
+          component: {{ component }}
+
+output.logstash:
+  hosts: ["frontend_ipaddress.5044"]
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+setup.template.settings:
+  index.number_of_shards: 1
+
