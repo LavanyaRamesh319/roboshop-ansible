@@ -1,14 +1,19 @@
-- name: Install nginx
+- name: Install Nginx
   ansible.builtin.yum:
     name: nginx
     state: installed
 
-- name: Copy roboshop content
+- name: Copy roboshop Config file
   ansible.builtin.template:
     src: roboshop.conf
     dest: /etc/nginx/default.d/roboshop.conf
 
-- name: Remove old app content"
+- name: Copy Nginx Config file
+  ansible.builtin.template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+
+- name: Clean Old App content
   ansible.builtin.file:
     path: /usr/share/nginx/html
     state: absent
@@ -18,19 +23,30 @@
     path: /usr/share/nginx/html
     state: directory
 
-- name: Download app content
+#- name: Download App Content
+#  ansible.builtin.unarchive:
+#    src: https://roboshop-artifacts.s3.amazonaws.com/frontend.zip
+#    dest: /usr/share/nginx/html
+#    remote_src: yes
+
+- name: Download App Content
   ansible.builtin.unarchive:
-    src: https://roboshop-artifacts.s3.amazonaws.com/frontend.zip
+    src: http://172.31.82.149:8081/repository/{{component}}/{{component}}-{{ lookup('aws_ssm', '{{ env }}.{{component}}.app_version', region='us-east-1' ) }}.zip
     dest: /usr/share/nginx/html
     remote_src: yes
 
-- name: start Nginx
+- name: Start Nginx
   ansible.builtin.systemd:
     state: restarted
     name: nginx
     enabled: true
 
-- name: import filebeat
+- name: Import Filebeat
   ansible.builtin.import_role:
     name: elk
     tasks_from: filebeat
+
+- name: Import Prometheus
+  ansible.builtin.import_role:
+    name: prometheus
+    tasks_from: node_exporter
